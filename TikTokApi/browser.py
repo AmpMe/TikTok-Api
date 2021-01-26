@@ -82,8 +82,10 @@ class browser:
             raise e
             logging.critical(e)
 
-        context = self.create_context(set_useragent=True)
+        # page = self.create_page(set_useragent=True)
+        context = self.create_page(set_useragent=True)
         page = context.new_page()
+
         self.get_params(page)
         context.close()
 
@@ -104,7 +106,7 @@ class browser:
         self.width = page.evaluate("""() => { return screen.width; }""")
         self.height = page.evaluate("""() => { return screen.height; }""")
 
-    def create_context(self, set_useragent=False):
+    def create_page(self, set_useragent=False):
         iphone = playwright.devices["iPhone 11 Pro"]
         iphone["viewport"] = {
             "width": random.randint(320, 1920),
@@ -161,7 +163,7 @@ class browser:
         url = kwargs.get("url", None)
         if url is None:
             raise Exception("sign_url required a url parameter")
-        context = self.create_context()
+        context = self.create_page()
         page = context.new_page()
         verifyFp = "".join(
             random.choice(
@@ -185,24 +187,24 @@ class browser:
             did = self.did
 
         page.set_content("<script> " + get_acrawler() + " </script>")
-        evaluatedPage = page.evaluate(
+        evalString = page.evaluate(
             '''() => {
-            var url = "'''
+                    var url = "'''
             + url
             + "&verifyFp="
             + verifyFp
             + """&did="""
             + did
             + """"
-            var token = window.byted_acrawler.sign({url: url});
-            return token;
-            }"""
+                var token = window.byted_acrawler.sign({url: url});
+                return token;
+                }"""
         )
         context.close()
         return (
             verifyFp,
             did,
-            evaluatedPage,
+            evalString,
         )
 
     def clean_up(self):
