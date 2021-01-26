@@ -82,9 +82,11 @@ class browser:
             raise e
             logging.critical(e)
 
-        page = self.create_page(set_useragent=True)
+        context = self.create_page(set_useragent=True)
+        page = context.newPage()
+
         self.get_params(page)
-        page.close()
+        context.close()
 
     def get_params(self, page) -> None:
         # self.browser_language = await self.page.evaluate("""() => { return
@@ -103,7 +105,7 @@ class browser:
         self.width = page.evaluate("""() => { return screen.width; }""")
         self.height = page.evaluate("""() => { return screen.height; }""")
 
-    def create_page(self, set_useragent=False):
+    def create_page_old(self, set_useragent=False):
         iphone = playwright.devices["iPhone 11 Pro"]
         iphone["viewport"] = {
             "width": random.randint(320, 1920),
@@ -119,6 +121,22 @@ class browser:
         page = context.newPage()
 
         return page
+
+    def create_page(self, set_useragent=False):
+        iphone = playwright.devices["iPhone 11 Pro"]
+        iphone["viewport"] = {
+            "width": random.randint(320, 1920),
+            "height": random.randint(320, 1920),
+        }
+        iphone["deviceScaleFactor"] = random.randint(1, 3)
+        iphone["isMobile"] = random.randint(1, 2) == 1
+        iphone["hasTouch"] = random.randint(1, 2) == 1
+
+        context = self.browser.newContext(**iphone)
+        if set_useragent:
+            self.userAgent = iphone["userAgent"]
+
+        return context
 
     def base36encode(self, number, alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
         """Converts an integer to a base36 string."""
@@ -161,7 +179,8 @@ class browser:
         url = kwargs.get("url", None)
         if url is None:
             raise Exception("sign_url required a url parameter")
-        page = self.create_page()
+        context = self.create_page()
+        page = context.newPage()
         verifyFp = "".join(
             random.choice(
                 string.ascii_lowercase + string.ascii_uppercase + string.digits
@@ -184,10 +203,7 @@ class browser:
             did = self.did
 
         page.setContent("<script> " + get_acrawler() + " </script>")
-        return (
-            verifyFp,
-            did,
-            page.evaluate(
+        evalString = page.evaluate(
                 '''() => {
         var url = "'''
                 + url
@@ -199,9 +215,13 @@ class browser:
         var token = window.byted_acrawler.sign({url: url});
         return token;
         }"""
-            ),
+            )
+        context.close()
+        return (
+            verifyFp,
+            did,
+            evalString
         )
-        page.close()
 
     def clean_up(self):
         try:
