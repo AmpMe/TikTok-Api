@@ -82,10 +82,9 @@ class browser:
             raise e
             logging.critical(e)
 
-        context = self.create_context(set_useragent=True)
-        page = context.new_page()
+        page = self.create_page(set_useragent=True)
         self.get_params(page)
-        context.close()
+        page.close()
 
     def get_params(self, page) -> None:
         # self.browser_language = await self.page.evaluate("""() => { return
@@ -104,7 +103,7 @@ class browser:
         self.width = page.evaluate("""() => { return screen.width; }""")
         self.height = page.evaluate("""() => { return screen.height; }""")
 
-    def create_context(self, set_useragent=False):
+    def create_page_old(self, set_useragent=False):
         iphone = playwright.devices["iPhone 11 Pro"]
         iphone["viewport"] = {
             "width": random.randint(320, 1920),
@@ -117,6 +116,23 @@ class browser:
         context = self.browser.new_context(**iphone)
         if set_useragent:
             self.userAgent = iphone["user_agent"]
+        page = context.new_page()
+
+        return page
+
+    def create_page(self, set_useragent=False):
+        iphone = playwright.devices["iPhone 11 Pro"]
+        iphone["viewport"] = {
+            "width": random.randint(320, 1920),
+            "height": random.randint(320, 1920),
+        }
+        iphone["deviceScaleFactor"] = random.randint(1, 3)
+        iphone["isMobile"] = random.randint(1, 2) == 1
+        iphone["hasTouch"] = random.randint(1, 2) == 1
+
+        context = self.browser.new_context(**iphone)
+        if set_useragent:
+            self.userAgent = iphone["userAgent"]
 
         return context
 
@@ -161,7 +177,7 @@ class browser:
         url = kwargs.get("url", None)
         if url is None:
             raise Exception("sign_url required a url parameter")
-        context = self.create_context()
+        context = self.create_page()
         page = context.new_page()
         verifyFp = "".join(
             random.choice(
@@ -198,7 +214,7 @@ class browser:
             return token;
             }"""
         )
-        context.close()
+        page.close()
         return (
             verifyFp,
             did,
