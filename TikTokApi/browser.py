@@ -103,23 +103,6 @@ class browser:
         self.width = page.evaluate("""() => { return screen.width; }""")
         self.height = page.evaluate("""() => { return screen.height; }""")
 
-    def create_page_old(self, set_useragent=False):
-        iphone = playwright.devices["iPhone 11 Pro"]
-        iphone["viewport"] = {
-            "width": random.randint(320, 1920),
-            "height": random.randint(320, 1920),
-        }
-        iphone["device_scale_factor"] = random.randint(1, 3)
-        iphone["is_mobile"] = random.randint(1, 2) == 1
-        iphone["has_touch"] = random.randint(1, 2) == 1
-
-        context = self.browser.new_context(**iphone)
-        if set_useragent:
-            self.userAgent = iphone["user_agent"]
-        page = context.new_page()
-
-        return page
-
     def create_page(self, set_useragent=False):
         iphone = playwright.devices["iPhone 11 Pro"]
         iphone["viewport"] = {
@@ -177,8 +160,7 @@ class browser:
         url = kwargs.get("url", None)
         if url is None:
             raise Exception("sign_url required a url parameter")
-        context = self.create_page()
-        page = context.new_page()
+        page = self.create_page()
         verifyFp = "".join(
             random.choice(
                 string.ascii_lowercase + string.ascii_uppercase + string.digits
@@ -200,26 +182,25 @@ class browser:
         else:
             did = self.did
 
-        page.set_content("<script> " + get_acrawler() + " </script>")
-        evaluatedPage = page.evaluate(
-            '''() => {
-            var url = "'''
-            + url
-            + "&verifyFp="
-            + verifyFp
-            + """&did="""
-            + did
-            + """"
-            var token = window.byted_acrawler.sign({url: url});
-            return token;
-            }"""
-        )
-        page.close()
+        page.setContent("<script> " + get_acrawler() + " </script>")
         return (
             verifyFp,
             did,
-            evaluatedPage,
+            page.evaluate(
+                '''() => {
+        var url = "'''
+                + url
+                + "&verifyFp="
+                + verifyFp
+                + """&did="""
+                + did
+                + """"
+        var token = window.byted_acrawler.sign({url: url});
+        return token;
+        }"""
+            ),
         )
+        page.close()
 
     def clean_up(self):
         try:
