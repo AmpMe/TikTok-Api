@@ -82,7 +82,6 @@ class browser:
             raise e
             logging.critical(e)
 
-        # page = self.create_page(set_useragent=True)
         context = self.create_page(set_useragent=True)
         page = context.new_page()
 
@@ -106,7 +105,7 @@ class browser:
         self.width = page.evaluate("""() => { return screen.width; }""")
         self.height = page.evaluate("""() => { return screen.height; }""")
 
-    def create_page(self, set_useragent=False):
+    def create_page_old(self, set_useragent=False):
         iphone = playwright.devices["iPhone 11 Pro"]
         iphone["viewport"] = {
             "width": random.randint(320, 1920),
@@ -119,6 +118,22 @@ class browser:
         context = self.browser.new_context(**iphone)
         if set_useragent:
             self.userAgent = iphone["user_agent"]
+
+        return context
+
+    def create_page(self, set_useragent=False):
+        iphone = playwright.devices["iPhone 11 Pro"]
+        iphone["viewport"] = {
+            "width": random.randint(320, 1920),
+            "height": random.randint(320, 1920),
+        }
+        iphone["deviceScaleFactor"] = random.randint(1, 3)
+        iphone["isMobile"] = random.randint(1, 2) == 1
+        iphone["hasTouch"] = random.randint(1, 2) == 1
+
+        context = self.browser.newContext(**iphone)
+        if set_useragent:
+            self.userAgent = iphone["userAgent"]
 
         return context
 
