@@ -26,3 +26,5 @@ test2.py
 build
 /venv/
 .idea/
+MANIFEST
+src
