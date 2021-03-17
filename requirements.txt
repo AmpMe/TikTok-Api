@@ -1,4 +1,4 @@
 requests
-playwright
+playwright==1.8.0a1
 selenium_stealth
 selenium
