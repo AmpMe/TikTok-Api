@@ -4,7 +4,7 @@ import time
 import logging
 import json
 from urllib.parse import urlencode, quote
-from playwright import sync_playwright
+from playwright.sync_api import sync_playwright
 import string
 import logging
 import os
@@ -328,7 +328,7 @@ class TikTokApi:
                 "region": region,
                 "priority_region": region,
                 "language": language,
-
+                
             }
             api_url = "{}api/recommend/item_list/?{}&{}".format(
                 BASE_URL, self.__add_new_params__(), urlencode(query)
@@ -344,7 +344,7 @@ class TikTokApi:
             realCount = count - len(response)
 
             first = False
-
+        
         return response[:count]
 
     def search_for_users(self, search_term, count=28, **kwargs) -> list:
@@ -1048,7 +1048,7 @@ class TikTokApi:
             },
             proxies=self.__format_proxy(kwargs.get("proxy", None)),
             cookies=self.get_cookies(**kwargs),
-        )
+        )        
 
         t = r.text
         try:
@@ -1068,7 +1068,7 @@ class TikTokApi:
             raise TikTokNotFoundError("TikTok with that url doesn't exist".format(username))
 
         return data
-
+        
 
     def discoverHashtags(self, **kwargs) -> dict:
         """Discover page, consists challenges (hashtags)
@@ -1493,7 +1493,7 @@ class TikTokApi:
         music_object = json.loads(j_raw)["props"]["pageProps"]["musicInfo"]
         if not music_object.get("title", None):
             raise TikTokNotFoundError("Song of {} id does not exist".format(str(id)))
-
+        
         return music_object["title"]
 
     def get_secUid(self, username, **kwargs):
