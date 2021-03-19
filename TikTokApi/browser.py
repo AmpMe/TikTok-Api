@@ -127,13 +127,13 @@ class browser:
             "width": random.randint(320, 1920),
             "height": random.randint(320, 1920),
         }
-        iphone["deviceScaleFactor"] = random.randint(1, 3)
-        iphone["isMobile"] = random.randint(1, 2) == 1
-        iphone["hasTouch"] = random.randint(1, 2) == 1
+        iphone["device_scale_factor"] = random.randint(1, 3)
+        iphone["is_mobile"] = random.randint(1, 2) == 1
+        iphone["has_touch"] = random.randint(1, 2) == 1
 
-        context = self.browser.newContext(**iphone)
+        context = self.browser.new_context(**iphone)
         if set_useragent:
-            self.userAgent = iphone["userAgent"]
+            self.userAgent = iphone["user_agent"]
 
         return context
 
